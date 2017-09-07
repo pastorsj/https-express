@@ -10,7 +10,7 @@ const UserController = {
             res.format({
                 json: () => {
                     res.json({
-                        error: err || 'User Not Found'
+                        error: 'User Not Found'
                     });
                 }
             });

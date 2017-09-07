@@ -6,9 +6,10 @@ import app from './app';
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
+import path from 'path';
 
-const privateKey  = fs.readFileSync('sslcert/server.key', 'utf8');
-const certificate = fs.readFileSync('sslcert/server.crt', 'utf8');
+const privateKey = fs.readFileSync(path.join(__dirname, '/sslcert/key.pem'), 'utf8');
+const certificate = fs.readFileSync(path.join(__dirname, '/sslcert/certificate.pem'), 'utf8');
 const credentials = {key: privateKey, cert: certificate};
 
 /**
@@ -20,7 +21,6 @@ const httpsPort = normalizePort(process.env.PORT || '3001');
 
 app.set('port', port);
 app.set('httpsPort', httpsPort);
-
 
 /**
  * Create HTTP/S server.
@@ -37,9 +37,9 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
-httpsServer.listen(port);
+httpsServer.listen(httpsPort);
 httpsServer.on('error', onError);
-httpsServer.on('listening', onListening);
+httpsServer.on('listening', onListeningHttps);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -93,5 +93,11 @@ function onError(error) {
 function onListening() {
     var addr = server.address();
     var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
-    console.log('Listening on ' + bind);
+    console.log('Http server listening on ' + bind);
+}
+
+function onListeningHttps() {
+    var addr = httpsServer.address();
+    var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+    console.log('Https server listening on ' + bind);
 }

@@ -1,8 +1,8 @@
 {
-  "name": "blog-api",
+  "name": "https-express",
   "version": "1.0.0",
   "author": "Sam Pastoriza [pastorsj](https://github.com/pastorsj)",
-  "repository": "https://github.com/pastorsj/blog-api",
+  "repository": "https://github.com/pastorsj/https-express",
   "private": false,
   "scripts": {
     "start": "babel-node ./src/server.js",

@@ -1,7 +1,6 @@
 'use strict';
 
 import express from 'express';
-import path from 'path';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
