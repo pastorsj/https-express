@@ -6,10 +6,9 @@ import app from './app';
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
-import path from 'path';
 
-const privateKey = fs.readFileSync(path.join(__dirname, '/sslcert/key.pem'), 'utf8');
-const certificate = fs.readFileSync(path.join(__dirname, '/sslcert/certificate.pem'), 'utf8');
+const privateKey = fs.readFileSync(process.env.PRIVATE_KEY, 'utf8');
+const certificate = fs.readFileSync(process.env.CERTIFICATE, 'utf8');
 const credentials = {key: privateKey, cert: certificate};
 
 /**
