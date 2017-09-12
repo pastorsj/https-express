@@ -1,44 +1,49 @@
-/**
- * Module dependencies.
- */
+'use strict';
 
 import app from './app';
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
+import yargs from 'yargs';
 
-const privateKey = fs.readFileSync(process.env.PRIVATE_KEY, 'utf8');
-const certificate = fs.readFileSync(process.env.CERTIFICATE, 'utf8');
-const credentials = {key: privateKey, cert: certificate};
+const argv = yargs.argv;
+const type = argv.type;
+const portArg = argv.port;
 
-/**
- * Get port from environment and store in Express.
- */
+function createHttpServer(httpPort = 3000) {
+    const port = normalizePort(process.env.HTTP_PORT || httpPort);
+    const server = http.createServer(app);
 
-const port = normalizePort(process.env.PORT || '3000');
-const httpsPort = normalizePort(process.env.PORT || '3001');
+    app.set('port', port);
 
-app.set('port', port);
-app.set('httpsPort', httpsPort);
+    server.listen(port);
+    server.on('error', onError.bind(null, port));
+    server.on('listening', onListening.bind(null, server));
+}
 
-/**
- * Create HTTP/S server.
- */
+function createHttpsServer(httpsPort = 3001) {
+    const privateKey = fs.readFileSync(process.env.PRIVATE_KEY, 'utf8');
+    const certificate = fs.readFileSync(process.env.CERTIFICATE, 'utf8');
+    const credentials = {key: privateKey, cert: certificate};
 
-const server = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
+    const port = normalizePort(process.env.HTTPS_PORT || httpsPort);
+    const httpsServer = https.createServer(credentials, app);
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+    app.set('httpsPort', port);
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+    httpsServer.listen(port);
+    httpsServer.on('error', onError.bind(null, port));
+    httpsServer.on('listening', onListeningHttps.bind(null, httpsServer));
+}
 
-httpsServer.listen(httpsPort);
-httpsServer.on('error', onError);
-httpsServer.on('listening', onListeningHttps);
+if (type === 'https') {
+    createHttpsServer(portArg);
+} else if (type === 'http') {
+    createHttpServer(portArg);
+} else {
+    createHttpServer();
+    createHttpsServer();
+}
 
 /**
  * Normalize a port into a number, string, or false.
@@ -64,7 +69,7 @@ function normalizePort(val) {
  * Event listener for HTTP server "error" event.
  * @param {Object} error - The object containing the error
  */
-function onError(error) {
+function onError(error, port) {
     if (error.syscall !== 'listen') {
         throw error;
     }
@@ -89,13 +94,13 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-function onListening() {
+function onListening(server) {
     var addr = server.address();
     var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
     console.log('Http server listening on ' + bind);
 }
 
-function onListeningHttps() {
+function onListeningHttps(httpsServer) {
     var addr = httpsServer.address();
     var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
     console.log('Https server listening on ' + bind);

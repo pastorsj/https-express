@@ -2,9 +2,37 @@
 A simple boilerplate express server using https
 
 ## How to run
+This will run the server with http and https.
 ```
 npm install
 npm start
+```
+### Customization options
+* Running HTTP xor HTTPS
+If you just want to run the server on http
+```
+npm run http
+```
+If you just want to run the server on https
+```
+npm run https
+```
+* Adding a port option
+```
+npm run http --port=3000
+```
+or
+```
+npm run https --port=3000
+```
+But you cannot run 
+```
+npm start --port=3000
+```
+since you will not be able to start to different express instances on port 3000. It won't fail, but it won't take into account the argument. Two environment variables are available to customize. They are
+```
+HTTP_PORT
+HTTPS_PORT
 ```
 
 ## Generating a self signed certificate
