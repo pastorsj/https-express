@@ -2,7 +2,7 @@
 
 import app from './app';
 import http from 'http';
-import https from 'https';
+import spdy from 'spdy';
 import fs from 'fs';
 import yargs from 'yargs';
 
@@ -10,6 +10,10 @@ const argv = yargs.argv;
 const type = argv.type;
 const portArg = argv.port;
 
+/**
+ * Creates a Http server
+ * @param {Number} httpPort - The port to listen on
+ */
 function createHttpServer(httpPort = 3000) {
     const port = normalizePort(process.env.HTTP_PORT || httpPort);
     const server = http.createServer(app);
@@ -21,19 +25,23 @@ function createHttpServer(httpPort = 3000) {
     server.on('listening', onListening.bind(null, server));
 }
 
+/**
+ * Creates a Https/Http2 server
+ * @param {Number} httpsPort - The port to listen on
+ */
 function createHttpsServer(httpsPort = 3001) {
     const privateKey = fs.readFileSync(process.env.PRIVATE_KEY, 'utf8');
     const certificate = fs.readFileSync(process.env.CERTIFICATE, 'utf8');
     const credentials = {key: privateKey, cert: certificate};
 
     const port = normalizePort(process.env.HTTPS_PORT || httpsPort);
-    const httpsServer = https.createServer(credentials, app);
+    const http2Server = spdy.createServer(credentials, app);
 
     app.set('httpsPort', port);
 
-    httpsServer.listen(port);
-    httpsServer.on('error', onError.bind(null, port));
-    httpsServer.on('listening', onListeningHttps.bind(null, httpsServer));
+    http2Server.listen(port);
+    http2Server.on('error', onError.bind(null, port));
+    http2Server.on('listening', onListeningHttps.bind(null, http2Server));
 }
 
 if (type === 'https') {
@@ -47,8 +55,9 @@ if (type === 'https') {
 
 /**
  * Normalize a port into a number, string, or false.
+ * @param {String} val - The stringified port
+ * @returns {boolean | number} The port or if it does not exist
  */
-
 function normalizePort(val) {
     var port = parseInt(val, 10);
 
@@ -68,6 +77,7 @@ function normalizePort(val) {
 /**
  * Event listener for HTTP server "error" event.
  * @param {Object} error - The object containing the error
+ * @param {Number} port - The port to listen on
  */
 function onError(error, port) {
     if (error.syscall !== 'listen') {
